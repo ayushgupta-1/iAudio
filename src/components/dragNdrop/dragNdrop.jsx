@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+/* eslint-disable react/prop-types */
+import { useState } from "react";
 import { AiOutlineCheckCircle, AiOutlineCloudUpload } from "react-icons/ai";
 import { MdClear } from "react-icons/md";
 import "./dragNdrop.css";
@@ -6,6 +7,10 @@ import "./dragNdrop.css";
 const AudioDragUploader = ({ onFilesSelected }) => {
   const [files, setFiles] = useState([]);
 
+  /**
+   * The handleFileChange function takes in a file input event, extracts selected files, and adds them to
+   * the existing files state.
+   */
   const handleFileChange = (event) => {
     const selectedFiles = event.target.files;
     if (selectedFiles && selectedFiles.length > 0) {
@@ -13,6 +18,11 @@ const AudioDragUploader = ({ onFilesSelected }) => {
       setFiles((prevFiles) => [...prevFiles, ...newFiles]);
     }
   };
+
+  /**
+   * The handleDrop function in JavaScript React allows for handling files that are dropped onto a
+   * designated area.
+   */
   const handleDrop = (event) => {
     event.preventDefault();
     const droppedFiles = event.dataTransfer.files;
@@ -22,14 +32,18 @@ const AudioDragUploader = ({ onFilesSelected }) => {
     }
   };
 
+  /**
+   * The function `handleRemoveFile` removes a file from the `files` state array based on the index
+   * provided.
+   */
   const handleRemoveFile = (index) => {
     setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
 
-  // useEffect(() => {
-  //   onFilesSelected(files);
-  // }, [files, onFilesSelected]);
-
+  /**
+   * The `uploadFiles` function adds selected files to the existing list of files and then clears the
+   * list after a delay of 300 milliseconds.
+   */
   const uploadFiles = () => {
     onFilesSelected((prevFiles) => [...prevFiles, ...files]);
     setTimeout(() => {
@@ -38,7 +52,6 @@ const AudioDragUploader = ({ onFilesSelected }) => {
   };
 
   return (
-    // <section className="drag-drop" style={{ width: width, height: height }}>
     <section className="drag-drop w-full mt-2">
       <div
         className={`document-uploader ${
@@ -52,8 +65,7 @@ const AudioDragUploader = ({ onFilesSelected }) => {
             <AiOutlineCloudUpload className="text-[36px] mr-4" />
             <div className="text-[16px]">
               <p className="font-bold">Drag and drop your files here</p>
-              <p>Supported files: .MP3</p>
-              {/* <p>Limit 15MB per file</p> */}
+              <p>Supported files: .MP3</p>{" "}
             </div>
           </div>
           <input
@@ -62,7 +74,6 @@ const AudioDragUploader = ({ onFilesSelected }) => {
             id="browse"
             onChange={handleFileChange}
             accept=".mp3"
-            // accept=".pdf,.docx,.pptx,.txt,.xlsx"
             multiple
           />
           <label

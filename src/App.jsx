@@ -1,17 +1,25 @@
 import { useState } from "react";
 
-import TrackInfo from "./components/tracks/track";
+import TrackInfo from "./components/track";
 import AudioDragUploader from "./components/dragNdrop/dragNdrop";
-import Timeline from "./components/timeline/timeline";
+import Timeline from "./components/timeline";
 
 export default function App() {
   const [files, setFiles] = useState([]);
   const [edit, setEdit] = useState(false);
 
+  /**
+   * The `handleRemoveFile` function removes a file from the `files` state array based on the index
+   * provided.
+   */
   const handleRemoveFile = (index) => {
     setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
 
+  /**
+   * The `editQueue` function allows for moving an item within an array based on a specified position
+   * (up or down) and index, this is used to move audio up and down the timeline.
+   */
   const editQueue = (position, index) => {
     const newArray = [...files];
     const itemToMove = newArray.splice(index, 1)[0];
@@ -23,7 +31,7 @@ export default function App() {
       }
       setFiles(newArray);
     }
-    console.log("queue edit : " + position + ", " + edit);
+    // console.log("queue edit : " + position + ", " + edit);
   };
 
   return (

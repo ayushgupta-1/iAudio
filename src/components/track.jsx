@@ -1,6 +1,5 @@
 /* eslint-disable react/prop-types */
 import { useRef, useEffect, useState, useCallback } from "react";
-
 import {
   MdClear,
   MdOutlineKeyboardArrowUp,
@@ -8,8 +7,9 @@ import {
   MdPlayArrow,
   MdPause,
 } from "react-icons/md";
-import { MusicIcon } from "../../assets/icons";
-import { formatTime } from "../../utils/helper";
+
+import { MusicIcon } from "../assets/icons";
+import { formatTime } from "../utils/helper";
 
 const TrackInfo = ({ track, index, handleRemoveFile, edit, editQueue }) => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -18,6 +18,8 @@ const TrackInfo = ({ track, index, handleRemoveFile, edit, editQueue }) => {
   const progressBarRef = useRef();
   const playAnimationRef = useRef();
 
+  /* The `repeat` function defined using `useCallback` in the `TrackInfo` component is responsible for
+updating the progress bar of the audio player while the audio is playing. */
   const repeat = useCallback(() => {
     try {
       const currentTime = audioRef.current.currentTime;
@@ -34,6 +36,8 @@ const TrackInfo = ({ track, index, handleRemoveFile, edit, editQueue }) => {
     }
   }, [audioRef, progressBarRef, duration]);
 
+  /* The `useEffect` hook is responsible for managing the audio playback and
+updating the progress bar animation based on the `isPlaying` state.*/
   useEffect(() => {
     if (isPlaying) {
       audioRef.current.play();
@@ -47,10 +51,17 @@ const TrackInfo = ({ track, index, handleRemoveFile, edit, editQueue }) => {
     setIsPlaying((prev) => !prev);
   };
 
+  /**
+   * The handleProgressChange function updates the current time of an audio element based on the value of
+   * a progress bar input.
+   */
   const handleProgressChange = () => {
     audioRef.current.currentTime = progressBarRef.current.value;
   };
 
+  /**
+   * The `onLoadedMetadata` function sets the the progress bar maximum value to duration of an audio element and resets the progress bar value to 0.
+   */
   const onLoadedMetadata = () => {
     // console.log(audioRef.current.duration);
     const seconds = audioRef.current.duration;
