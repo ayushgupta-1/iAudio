@@ -1,11 +1,13 @@
+/* eslint-disable react/prop-types */
 import { useEffect, useState, useRef, useCallback } from "react";
-import { MdOutlineEdit } from "react-icons/md";
+import { MdOutlineEdit, MdClear } from "react-icons/md";
 
-import Crunker from "../../utils/crunker";
+// import Crunker from "../../utils/crunker";
+import { formatTime } from "../../utils/helper";
 import { PauseIcon, PlayIcon, PlusIcon } from "../../assets/icons";
 
-const Timeline = ({ tracks, onFilesSelected }) => {
-  //   const [files, setFiles] = useState([]);
+const Timeline = ({ tracks, onFilesSelected, setEdit, edit }) => {
+  const [timeProgress, setTimeProgress] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [timeline, setTimeline] = useState();
   const [duration, setDuration] = useState(0);
@@ -20,6 +22,8 @@ const Timeline = ({ tracks, onFilesSelected }) => {
   const repeat = useCallback(() => {
     try {
       const currentTime = audioRef.current.currentTime;
+      setTimeProgress(currentTime);
+
       progressBarRef.current.value = currentTime;
 
       progressBarRef.current.style.setProperty(
@@ -27,15 +31,11 @@ const Timeline = ({ tracks, onFilesSelected }) => {
         `${(progressBarRef.current.value / duration) * 100}%`
       );
 
-      // if (currentTime === duration) {
-      //   togglePlayPause();
-      // }
-
       playAnimationRef.current = requestAnimationFrame(repeat);
     } catch (e) {
       console.log("error : ", e);
     }
-  }, [audioRef, progressBarRef, duration]);
+  }, [audioRef, progressBarRef, duration, setTimeProgress]);
 
   useEffect(() => {
     if (isPlaying) {
@@ -51,38 +51,27 @@ const Timeline = ({ tracks, onFilesSelected }) => {
   };
 
   const onLoadedMetadata = () => {
-    console.log(audioRef.current.duration);
+    // console.log(audioRef.current.duration);
     const seconds = audioRef.current.duration;
     setDuration(seconds);
     progressBarRef.current.max = seconds;
     progressBarRef.current.value = 0;
   };
 
-  const formatTime = (time) => {
-    if (time && !isNaN(time)) {
-      const minutes = Math.floor(time / 60);
-      const formatMinutes = minutes < 10 ? `0${minutes}` : `${minutes}`;
-      const seconds = Math.floor(time % 60);
-      const formatSeconds = seconds < 10 ? `0${seconds}` : `${seconds}`;
-      return `${formatMinutes}:${formatSeconds}`;
-    }
-    return "00:00";
-  };
+  // let crunker = new Crunker();
 
-  let crunker = new Crunker();
+  // const createTimeline = () => {
+  //   crunker
+  //     .fetchAudio(...tracks)
+  //     .then((buffers) => crunker.concatAudio(buffers))
+  //     .then((merged) => crunker.export(merged, "audio/mp3"))
+  //     .then((output) => setTimeline(output.blob))
+  //     .catch((error) => {
+  //       throw new Error(error);
+  //     });
+  // };
 
-  const createTimeline = () => {
-    crunker
-      .fetchAudio(...tracks)
-      .then((buffers) => crunker.concatAudio(buffers))
-      .then((merged) => crunker.export(merged, "audio/mp3"))
-      .then((output) => setTimeline(output.blob))
-      .catch((error) => {
-        throw new Error(error);
-      });
-  };
-
-  const createTimelineCustom = () => {
+  const createCustomTimeline = () => {
     try {
       const uris = tracks.map((track) => {
         // Assuming track is an object with some properties like filename or path
@@ -96,10 +85,7 @@ const Timeline = ({ tracks, onFilesSelected }) => {
       Promise.all(proms).then((blobs) => {
         const blob = new Blob(blobs),
           blobUrl = URL.createObjectURL(blob);
-        console.log("BU :" + blobUrl);
         setTimeline(blobUrl);
-        // audio = new Audio(blobUrl);
-        //   audio.play();
       });
     } catch (e) {
       console.log(e);
@@ -107,10 +93,8 @@ const Timeline = ({ tracks, onFilesSelected }) => {
   };
 
   useEffect(() => {
-    createTimelineCustom();
+    createCustomTimeline();
   }, [tracks]);
-
-  const editQueue = () => {};
 
   const uploadFiles = (event) => {
     event.preventDefault();
@@ -120,6 +104,13 @@ const Timeline = ({ tracks, onFilesSelected }) => {
       onFilesSelected((prevFiles) => [...prevFiles, ...newFiles]);
     }
   };
+
+  useEffect(() => {
+    if (timeProgress === duration) {
+      setIsPlaying(false);
+      audioRef.current.currentTime = 0;
+    }
+  }, [timeProgress]);
 
   return (
     <div className="flex items-center gap-4">
@@ -136,9 +127,13 @@ const Timeline = ({ tracks, onFilesSelected }) => {
       </div>
       <div
         className="flex cursor-pointer items-center text-white justify-center rounded-full p-4 bg-black hover:bg-gray-700"
-        onClick={editQueue}
+        onClick={() => setEdit((prev) => !prev)}
       >
-        <MdOutlineEdit className="h-5 w-5" />
+        {edit ? (
+          <MdClear className="h-5 w-5" />
+        ) : (
+          <MdOutlineEdit className="h-5 w-5" />
+        )}
       </div>
       <div className="flex w-full items-center">
         <input
@@ -146,20 +141,23 @@ const Timeline = ({ tracks, onFilesSelected }) => {
           type="range"
           ref={progressBarRef}
           defaultValue="0"
-          className="w-full"
+          className="w-full thumb"
           onChange={handleProgressChange}
         />
       </div>
-      {/* <audio
+      <audio
         ref={audioRef}
         // src={URL.createObjectURL(new Blob([timeline]))}
         src={timeline}
         onLoadedMetadata={onLoadedMetadata}
-      /> */}
-      <audio ref={audioRef} onLoadedMetadata={onLoadedMetadata}>
+      />
+      {/* <audio ref={audioRef} onLoadedMetadata={onLoadedMetadata}>
         <source src={timeline} type="audio/mpeg" />
-      </audio>
-      <div className="text-sm flex justify-center">{formatTime(duration)}</div>
+      </audio> */}
+      {/* <div className="text-sm flex justify-center">{formatTime(duration)}</div> */}
+      <div className="text-sm flex justify-center  w-auto sm:w-1/6">
+        {formatTime(timeProgress)} / {formatTime(duration)}
+      </div>
       <input
         type="file"
         hidden

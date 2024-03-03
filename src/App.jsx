@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import TrackInfo from "./components/tracks/track";
 import AudioDragUploader from "./components/dragNdrop/dragNdrop";
@@ -6,47 +6,72 @@ import Timeline from "./components/timeline/timeline";
 
 export default function App() {
   const [files, setFiles] = useState([]);
-
-  useEffect(() => {
-    console.log("File : ", files);
-  }, [files]);
+  const [edit, setEdit] = useState(false);
 
   const handleRemoveFile = (index) => {
     setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
 
+  const editQueue = (position, index) => {
+    const newArray = [...files];
+    const itemToMove = newArray.splice(index, 1)[0];
+    if (edit) {
+      if (position === "up" && index > 0) {
+        newArray.splice(index - 1, 0, itemToMove);
+      } else if (position === "down" && index < newArray.length) {
+        newArray.splice(index + 1, 0, itemToMove);
+      }
+      setFiles(newArray);
+    }
+    console.log("queue edit : " + position + ", " + edit);
+  };
+
   return (
     <div className="flex flex-col w-full max-w-4xl p-4 mx-auto">
-      <div className="mt-4 text-6xl">
-        <p>iAudio</p>
+      <div className=" mt-4 flex w-full">
+        <div className="flex flex-grow text-6xl">
+          <p>iAudio</p>
+        </div>
+        <div className="flex text-gray-500 items-center">
+          Made by
+          <a
+            className="underline ml-1"
+            href="https://www.linkedin.com/in/ayush-gupta-099/"
+          >
+            Ayush Gupta
+          </a>
+        </div>
       </div>
-      {/* <div className="mt-6 grid gap-2"> */}
       <div className="mt-2">
-        {/* <h1 className="text-2xl">Audio Timeline</h1> */}
         <p className="text-gray-500">
-          Add audio files to the timeline and arrange them as needed. Click the
-          play button to start playback.
+          Arrange the audio files on the timeline as desired and click the play
+          button to begin playback.
         </p>
       </div>
       {files.length == 0 && <AudioDragUploader onFilesSelected={setFiles} />}
-      {/* <AudioDragUploader onFilesSelected={setFiles} /> */}
-      <div className="mt-6 grid gap-4">
-        {files.length !== 0 && (
-          <Timeline tracks={files} onFilesSelected={setFiles} />
-        )}
-        <div className="grid gap-2">
-          {files.map((file, index) => (
-            <div key={index}>
-              <TrackInfo
-                trackName={file.name}
-                index={index}
-                handleRemoveFile={handleRemoveFile}
-                track={files[index]}
-              />
-            </div>
-          ))}
+      {files.length !== 0 && (
+        <div className="mt-6 grid gap-4">
+          <Timeline
+            tracks={files}
+            onFilesSelected={setFiles}
+            setEdit={setEdit}
+            edit={edit}
+          />
+          <div className="grid gap-2">
+            {files.map((file, index) => (
+              <div key={index}>
+                <TrackInfo
+                  index={index}
+                  handleRemoveFile={handleRemoveFile}
+                  track={files}
+                  edit={edit}
+                  editQueue={editQueue}
+                />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
